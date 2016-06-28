@@ -1,0 +1,39 @@
+{% extends app.request.xmlHttpRequest
+    ? 'FLECrudBundle::base_ajax.html.twig'
+    : 'MopaBootstrapBundle::base_less.html.twig' %}
+
+{% block head_style %}
+    {% stylesheets
+        '@MopaBootstrapBundle/Resources/public/less/mopabootstrapbundle-fa.less'
+    %}
+    <link href="{{ asset_url }}" type="text/css" rel="stylesheet" media="screen" />
+    {% endstylesheets %}
+{% endblock head_style %}
+
+{% block title %}{{ 'title'|trans }}{% endblock title %}
+
+{% block navbar %}
+{% endblock navbar %}
+
+{% block foot_script_assetic %}
+    {% javascripts
+    '@MopaBootstrapBundle/Resources/public/bootstrap/js/tooltip.js'
+    '@MopaBootstrapBundle/Resources/public/bootstrap/js/*.js'
+    '@MopaBootstrapBundle/Resources/public/js/mopabootstrap-collection.js'
+    '@MopaBootstrapBundle/Resources/public/js/mopabootstrap-subnav.js'
+    %}
+    <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock foot_script_assetic %}
+
+{% block head_script %}
+    {# Use Bower to install jquery #}
+    {% javascripts
+        'assets/vendor/jquery/dist/jquery.js'
+    %}
+        <script type="text/javascript" src="{{ asset_url }}"></script>
+    {% endjavascripts %}
+{% endblock head_script %}
+
+{% block footer %}
+{% endblock footer %}

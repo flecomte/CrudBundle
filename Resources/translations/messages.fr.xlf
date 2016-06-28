@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="fr" target-language="fr" datatype="plaintext" original="file.ext">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="9a750e045d2d09f7c09999dd27e887c2" resname="form.btn.edit">
+        <source>form.btn.edit</source>
+        <target>Éditer</target>
+      </trans-unit>
+      <trans-unit id="2df0c37fc20a65657e4d669fe33473cd" resname="form.btn.create">
+        <source>form.btn.create</source>
+        <target>Crée</target>
+      </trans-unit>
+      <trans-unit id="152bd2c7130ffd11f9ad99b1ef288aa5" resname="form.btn.delete">
+        <source>form.btn.delete</source>
+        <target>Supprimer</target>
+      </trans-unit>
+      <trans-unit id="c0bf092a35841220040c5e3d81324dd2" resname="form.btn.update">
+        <source>form.btn.update</source>
+        <target>Mettre à jour</target>
+      </trans-unit>
+      <trans-unit id="form.reset">
+        <source>form.reset</source>
+        <target>Reset</target>
+      </trans-unit>
+      <trans-unit id="f53d1cd25e03173ba9eaa4e493636769" resname="(optional)">
+        <source>(optional)</source>
+        <target>(optionnel)</target>
+      </trans-unit>
+      <trans-unit id="53fed01ad10af7297cf5761e9f8102a1" resname="table.createAt">
+        <source>table.createAt</source>
+        <target>Date de création</target>
+      </trans-unit>
+      <trans-unit id="49e7dc9be76b57511a24c35a68f26734" resname="table.updateAt">
+        <source>table.updateAt</source>
+        <target>Date de modification</target>
+      </trans-unit>
+      <trans-unit id="36042b968494449098cb3eeaab8fee65" resname="table.createBy">
+        <source>table.createBy</source>
+        <target>Crée par</target>
+      </trans-unit>
+      <trans-unit id="d1381bbf397dd3a67e688e1450d6b3a6" resname="table.updateBy">
+        <source>table.updateBy</source>
+        <target>Modifier par</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,2 @@
+parameters:
+    mopa_bootstrap.twig.extension.icon.class: FLE\Bundle\CrudBundle\Twig\Extension\IconExtension

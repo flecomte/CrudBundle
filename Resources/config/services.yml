@@ -1,0 +1,9 @@
+services:
+    twig.extension.form_extension:
+        class: FLE\Bundle\CrudBundle\Twig\Extension\FormExtension
+        tags:
+            - { name: twig.extension }
+    twig.extension.word_extension:
+        class: FLE\Bundle\CrudBundle\Twig\Extension\WordExtension
+        tags:
+            - { name: twig.extension }
