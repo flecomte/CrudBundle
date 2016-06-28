@@ -101,8 +101,7 @@ abstract class ControllerAbstract extends FOSRestController
             /** @var SlidingPagination $entities */
             $entities = $paginator->paginate(
                 $query,
-                $request->query->getInt('page', 1),
-                $request->query->getInt('limit', 10)
+                $request->query->getInt('page', 1)
             );
         } else {
             $entities = $repository->findAll();

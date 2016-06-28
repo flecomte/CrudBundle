@@ -35,7 +35,6 @@ composer.phar update fle/crud-bundle # to only update the bundle
 Register the bundle with your kernel in `AppKernel::registerBundles()`:
 ```php
 <?php
-// in
 $bundles = array(
     // ...
     new JMS\DiExtraBundle\JMSDiExtraBundle($this),
