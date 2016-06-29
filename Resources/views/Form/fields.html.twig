@@ -1,0 +1,113 @@
+{% extends "MopaBootstrapBundle::Form/fields.html.twig" %}
+
+{%- block button_attributes -%}
+    {%- if getMethod(form) == 'POST' -%}
+        {%- set attr = attr|merge({class: attr.class | default("btn-success")}) -%}
+    {%- elseif getMethod(form) == 'PUT' -%}
+        {%- set attr = attr|merge({class: attr.class | default("btn-warning")}) -%}
+    {%- elseif getMethod(form) == 'PATCH' -%}
+        {%- set attr = attr|merge({class: attr.class | default("btn-warning")}) -%}
+    {%- elseif getMethod(form) == 'DELETE' -%}
+        {%- set attr = attr|merge({class: attr.class | default("btn-danger")}) -%}
+    {%- else -%}
+        {%- set attr = attr|merge({class: attr.class | default("btn-default")}) -%}
+    {%- endif -%}
+    {{ parent() }}
+{%- endblock button_attributes -%}
+
+{%- block button_widget -%}
+    {%- import _self as macros -%}
+
+    {%- if label is empty -%}
+        {% set label = macros.form_btn_parent_name(form) %}
+    {%- endif -%}
+
+    {{ parent() }}
+{%- endblock button_widget -%}
+
+{%- macro form_btn_parent_name(form, prefix) -%}
+    {%- import _self as macros -%}
+
+    {%- set prefix = prefix|default(false) -%}
+
+    {%- if form.parent is empty -%}
+        form.btn
+    {%- else -%}
+        {{ macros.form_btn_parent_name(form.parent, true) }}.{{ form.vars.name }}
+    {%- endif -%}
+{%- endmacro -%}
+
+{%- block form_label -%}
+        {%- import _self as macros -%}
+
+        {%- if label is empty -%}
+            {%- set label = macros.form_parent_name(form) -%}
+        {%- endif -%}
+
+        {{ parent() }}
+{%- endblock form_label -%}
+
+{%- macro form_parent_name(form, prefix) -%}
+        {%- import _self as macros -%}
+
+        {%- set prefix = prefix|default(false) -%}
+
+        {%- if form.parent is empty -%}
+            {{ form.vars.name }}
+        {%- else -%}
+            {%- if form.vars.compound and not prefix -%}
+                {{ macros.form_parent_name(form.parent, true) }}.{{ form.vars.name }}.label
+            {%- else -%}
+                {{ macros.form_parent_name(form.parent, true) }}.{{ form.vars.name }}
+            {%- endif -%}
+        {%- endif -%}
+{%- endmacro -%}
+
+{%- macro auto_placeolder(id) -%}
+    {%- set idSplit = id|preg_replace('`(__name__|[0-9]+)`', 'n')|replace({'_':'.'})|split('.', 2) -%}
+    {{- idSplit[0] ~ '.' ~ idSplit[1] ~ '.placeholder' -}}
+{%- endmacro -%}
+
+{%- block choice_widget_collapsed -%}
+    {%- import _self as macros -%}
+    {% if placeholder is not defined or placeholder == "" %}
+        {% set placeholder = macros.auto_placeolder(id) %}
+    {% endif %}
+    {{ parent() }}
+{%- endblock choice_widget_collapsed -%}
+
+{%- block widget_attributes -%}
+    {%- import _self as macros -%}
+    {{ parent() }}
+    {% if placeholder is not defined or placeholder == "" %}
+        {% set placeholder = macros.auto_placeolder(id) %}
+    {% endif %}
+    {% if attr['placeholder'] is not defined and placeholder is defined and placeholder != "" %}
+        {% set attr = attr|merge({'placeholder': placeholder}) %}
+    {% endif %}
+    {%- if placeholder is defined and placeholder != "" and not full_name|preg_match('`_token`') and 'radio' not in block_prefixes and 'checkbox' not in block_prefixes -%}
+        {{- ' placeholder' }}="{{ translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain) }}"
+    {%- endif -%}
+{%- endblock widget_attributes -%}
+
+{% block date_widget %}
+    {% if widget == 'single_text' %}
+        {% set attr = attr|merge({'class': (attr.class|default('') ~ ' date')|trim}) %}
+        {{ parent() }}
+    {% endif %}
+{% endblock date_widget %}
+
+{% block time_widget %}
+    {% if widget == 'single_text' %}
+        {% set attr = attr|merge({'class': (attr.class|default('') ~ ' time')|trim}) %}
+        {{ parent() }}
+    {% endif %}
+{% endblock time_widget %}
+
+{% block datetime_widget %}
+    {% if widget == 'single_text' %}
+        {% set attr = attr|merge({'class': (attr.class|default('') ~ ' datetime')|trim}) %}
+        {{ parent() }}
+    {% endif %}
+{% endblock datetime_widget %}
+

@@ -1,0 +1,27 @@
+.search form.navbar-form {
+  &:before {
+    content: "\f002";
+    font: normal normal normal 14px/1 FontAwesome;
+    margin-right: 8px;
+    font-size: 18px;
+    vertical-align: middle;
+  }
+  label {
+    position: absolute;
+    margin: -18px 0 0 0;
+    font-size: 12px;
+    padding: 0 4px;
+    font-weight: normal;
+  }
+  @media (min-width: 768px) {
+    .input-group .input-group-addon {
+      width: 1%;
+    }
+  }
+  .input-group {
+    max-width: 260px;
+  }
+  & > input:first-of-type {
+    min-width: 220px;
+  }
+}

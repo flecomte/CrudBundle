@@ -27,9 +27,7 @@ require: {
 Then run a composer update:
 
 ```bash
-composer.phar update
-# OR
-composer.phar update fle/crud-bundle # to only update the bundle
+composer.phar update fle/crud-bundle
 ```
 
 Register the bundle with your kernel in `AppKernel::registerBundles()`:
@@ -50,8 +48,13 @@ jms_di_extra:
     locations:
         bundles:
             - FLECrudBundle
+
 fle_crud:
     user_class: Company\MyBundle\Entity\User
+
+twig:
+    form_themes:
+        - 'FLECrudBundle::Form/fields.html.twig'
 ```
 
 

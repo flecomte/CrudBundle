@@ -19,7 +19,6 @@
         "doctrine/orm": "^2.5",
         "doctrine/doctrine-bundle": "^1.6",
         "friendsofsymfony/rest-bundle": "^2",
-        "friendsofsymfony/elastica-bundle": "dev-master",
         "friendsofsymfony/user-bundle": "dev-master",
         "jms/serializer-bundle": "^1",
         "jms/di-extra-bundle": ">=1.7",
@@ -31,6 +30,9 @@
     "require-dev": {
         "phpunit/phpunit": "5.*",
         "satooshi/php-coveralls": "dev-master"
+    },
+    "suggest": {
+        "friendsofsymfony/elastica-bundle": "dev-master"
     },
     "autoload": {
         "psr-4": { "FLE\\Bundle\\CrudBundle\\": "" }

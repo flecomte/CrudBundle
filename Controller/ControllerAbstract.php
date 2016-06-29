@@ -7,12 +7,13 @@ use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use FOS\ElasticaBundle\Manager\RepositoryManager;
 use FOS\ElasticaBundle\Paginator\PaginatorAdapterInterface;
-use FOS\ElasticaBundle\Repository;
+use FOS\ElasticaBundle\Repository as SearchRepository;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\View\View;
 use FLE\Bundle\CrudBundle\Form\DeleteType;
 use FLE\Bundle\CrudBundle\Entity\EntityInterface;
 use FLE\Bundle\CrudBundle\Repository\AbstractRepository;
+use FLE\Bundle\CrudBundle\SearchRepository\AbstractRepository as AbstractSearchRepository;
 use Knp\Bundle\PaginatorBundle\Pagination\SlidingPagination;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\AbstractType;
@@ -45,7 +46,7 @@ abstract class ControllerAbstract extends FOSRestController
     /**
      * @param null|string|EntityInterface $class
      *
-     * @return Repository
+     * @return AbstractSearchRepository
      */
     protected function getSearchRepository ($class = null)
     {
@@ -65,11 +66,12 @@ abstract class ControllerAbstract extends FOSRestController
     }
 
     /**
-     * @param Request                          $request
-     * @param Query|PaginatorAdapterInterface  $query
-     * @param string                           $bundle
+     * @param Request                         $request
+     * @param Query|PaginatorAdapterInterface $query
+     * @param string                          $bundle
      *
      * @return View
+     * @throws \Exception
      */
     protected function getEntitiesAction(Request $request, $query = null, $bundle = null)
     {
@@ -87,7 +89,14 @@ abstract class ControllerAbstract extends FOSRestController
         if ($query === null && ($formFilter = $this->createFormFilter()) !== null) {
             $formFilter->handleRequest($request);
             if ($formFilter->isValid() && $formFilter->isSubmitted()) {
-                $query = $this->getSearchRepository()->createPaginatorAdapter($formFilter);
+                $searchRepository = $this->getSearchRepository();
+                if ($searchRepository instanceof SearchRepository) {
+                    $query = $searchRepository->createPaginatorAdapter($formFilter);
+                } elseif (method_exists($repository, 'findQuery')) {
+                    $query = $repository->findQuery($formFilter);
+                } else {
+                    throw new \Exception('No Repository for filter');
+                }
             }
             $output['filter'] = $formFilter->createView();
         }
@@ -168,7 +177,9 @@ abstract class ControllerAbstract extends FOSRestController
             $em = $this->getDoctrine()->getManager();
             $em->persist($entity);
             $em->flush();
-            $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            if ($this->has('fos_elastica.index_manager')) {
+                $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            }
 
             $this->addFlash('success', $className.'.flash.post.success');
 
@@ -228,6 +239,9 @@ abstract class ControllerAbstract extends FOSRestController
             $em = $this->getDoctrine()->getManager();
             $em->persist($entity);
             $em->flush();
+            if ($this->has('fos_elastica.index_manager')) {
+                $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            }
 
             if ($redirectRoute === null && $request->get('redirect') != null) {
                 $view->setLocation($request->get('redirect', $this->createRoute($entity, 'get', true)));
@@ -348,10 +362,19 @@ abstract class ControllerAbstract extends FOSRestController
         return $matches[1].'\\Form\\'.$matches[2].'Type';
     }
 
+    /**
+     * @return string|null
+     */
     private function getFormFilterTypeName ()
     {
         preg_match('`(.*)\\\\Controller\\\\(.*)Controller`', get_class($this), $matches);
-        return $matches[1].'\\Filter\\'.$matches[2].'Type';
+        if (class_exists($matches[1].'\\Filter\\'.$matches[2].'FilterType')) {
+            return $matches[1].'\\Filter\\'.$matches[2].'FilterType';
+        } elseif (class_exists($matches[1].'\\Filter\\'.$matches[2].'Type')) {
+            return $matches[1].'\\Filter\\'.$matches[2].'Type';
+        } else {
+            return null;
+        }
     }
 
     /**

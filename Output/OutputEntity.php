@@ -21,7 +21,7 @@ class OutputEntity
     /**
      * @var EntityInterface
      * @Serializer\Expose
-     * @Serializer\Groups({"default", "output"})
+     * @Serializer\Groups({"Default", "Output"})
      * @Serializer\Type("FLE\Bundle\CrudBundle\Entity\EntityInterface")
      * @Serializer\XmlElement(cdata=false)
      */
@@ -30,7 +30,7 @@ class OutputEntity
     /**
      * @var ConstraintViolationListInterface
      * @Serializer\Expose
-     * @Serializer\Groups({"default", "output"})
+     * @Serializer\Groups({"Default", "Output"})
      */
     protected $errors;
 

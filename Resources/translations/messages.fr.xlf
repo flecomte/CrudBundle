@@ -45,6 +45,10 @@
         <source>table.updateBy</source>
         <target>Modifier par</target>
       </trans-unit>
+      <trans-unit id="form.limit">
+        <source>form.limit</source>
+        <target>Limite</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
