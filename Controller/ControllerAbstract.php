@@ -283,7 +283,9 @@ abstract class ControllerAbstract extends FOSRestController
             $em = $this->getDoctrine()->getManager();
             $em->remove($entity);
             $em->flush();
-            $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            if ($this->has('fos_elastica.index_manager')) {
+                $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            }
             $view->setRoute($redirectRoute);
             $view->setRouteParameters($routeParameters);
             $view->setStatusCode(204);
