@@ -15,6 +15,7 @@ use FLE\Bundle\CrudBundle\Entity\EntityInterface;
 use FLE\Bundle\CrudBundle\Repository\AbstractRepository;
 use FLE\Bundle\CrudBundle\SearchRepository\AbstractRepository as AbstractSearchRepository;
 use Knp\Bundle\PaginatorBundle\Pagination\SlidingPagination;
+use Knp\Component\Pager\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\Request;
@@ -106,11 +107,13 @@ abstract class ControllerAbstract extends FOSRestController
             if ($query === null) {
                 $query = $repository->createQueryBuilder(strtolower($className))->getQuery();
             }
+            /** @var Paginator $paginator */
             $paginator = $this->get('knp_paginator');
             /** @var SlidingPagination $entities */
             $entities = $paginator->paginate(
                 $query,
-                $request->query->getInt('page', 1)
+                $request->query->getInt('page', 1),
+                $request->query->getInt('limit', 10)
             );
         } else {
             $entities = $repository->findAll();
