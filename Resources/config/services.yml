@@ -7,3 +7,7 @@ services:
         class: FLE\Bundle\CrudBundle\Twig\Extension\WordExtension
         tags:
             - { name: twig.extension }
+    twig.extension.pcre:
+        class: Jasny\Twig\PcreExtension
+        tags:
+          - { name: twig.extension }

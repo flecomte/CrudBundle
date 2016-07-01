@@ -24,7 +24,8 @@
         "jms/di-extra-bundle": ">=1.7",
         "knplabs/knp-paginator-bundle": ">=2.5",
         "twbs/bootstrap": "~3.3.0",
-        "mopa/bootstrap-bundle": "~3.0"
+        "mopa/bootstrap-bundle": "~3.0",
+        "jasny/twig-extensions": "dev-master"
     },
     "require-dev": {
         "phpunit/phpunit": "5.*",
