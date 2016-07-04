@@ -13,7 +13,6 @@ class Configuration implements ConfigurationInterface
 
         $rootNode
             ->children()
-                ->scalarNode('user_class')->isRequired()->cannotBeEmpty()->end()
             ->end()
         ;
 

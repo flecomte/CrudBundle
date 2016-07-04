@@ -17,6 +17,7 @@ use FLE\Bundle\CrudBundle\SearchRepository\AbstractRepository as AbstractSearchR
 use Knp\Bundle\PaginatorBundle\Pagination\SlidingPagination;
 use Knp\Component\Pager\Paginator;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\HttpFoundation\Request;
 
@@ -120,6 +121,13 @@ abstract class ControllerAbstract extends FOSRestController
         }
 
         $output[$this->plural($className, true)] = $entities;
+
+
+        /** @var EntityInterface $entity */
+        foreach ($entities as $entity) {
+            $output['delete_form'][$entity->getId()] = $this->createDeleteForm($entity)->createView();
+        };
+
         $view->setData($output);
         return $view;
     }
@@ -289,6 +297,10 @@ abstract class ControllerAbstract extends FOSRestController
             if ($this->has('fos_elastica.index_manager')) {
                 $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
             }
+
+            $className = strtolower($this->getClassName($entity));
+            $this->addFlash('success', $className.'.flash.delete.success');
+
             $view->setRoute($redirectRoute);
             $view->setRouteParameters($routeParameters);
             $view->setStatusCode(204);
@@ -419,7 +431,15 @@ abstract class ControllerAbstract extends FOSRestController
     {
         $className = $this->getClassName($entity);
         if ($plural) {
-            return strtolower($method).'_'.$this->plural($className, true);
+            $route = strtolower($method).'_'.$this->plural($className, true);
+            /** @var Router $router */
+            $router = $this->get('router');
+            if ($router->getRouteCollection()->get($route)) {
+                return $route;
+            } elseif (strtolower($method) == 'get') {
+                $route = strtolower('cget_'.$className);
+                return $route;
+            }
         } else {
             return strtolower($method.'_'.$className);
         }

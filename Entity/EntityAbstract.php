@@ -10,8 +10,6 @@ use JMS\Serializer\Annotation as Serializer;
  */
 abstract class EntityAbstract implements EntityInterface
 {
-    use EntityTrait;
-
     /**
      * @var int
      * @ORM\Id
@@ -37,4 +35,6 @@ abstract class EntityAbstract implements EntityInterface
     {
         $this->id = $id;
     }
+
+    abstract public function __toString ();
 }

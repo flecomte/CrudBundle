@@ -19,7 +19,5 @@ class FLECrudExtension extends Extension
         );
         $loader->load('config.yml');
         $loader->load('services.yml');
-
-        $container->setParameter('fle_crud.user_class', $config['user_class']);
     }
 }
