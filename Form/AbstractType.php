@@ -4,6 +4,7 @@ namespace FLE\Bundle\CrudBundle\Form;
 
 use FLE\Bundle\CrudBundle\Entity\EntityInterface;
 use JMS\DiExtraBundle\Annotation as DI;
+use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\AbstractType as BaseType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -22,14 +23,22 @@ abstract class AbstractType extends BaseType
     protected $requestStack;
 
     /**
-     * @DI\InjectParams({
-     *     "requestStack" = @DI\Inject("request_stack")
-     * })
-     * @param RequestStack          $requestStack
+     * @var Router
      */
-    public function __construct (RequestStack $requestStack)
+    protected $router;
+
+    /**
+     * @DI\InjectParams({
+     *     "requestStack" = @DI\Inject("request_stack"),
+     *     "router" = @DI\Inject("router")
+     * })
+     * @param RequestStack $requestStack
+     * @param Router       $router
+     */
+    public function __construct (RequestStack $requestStack, Router $router)
     {
         $this->requestStack = $requestStack;
+        $this->router = $router;
     }
 
     /**
@@ -61,6 +70,22 @@ abstract class AbstractType extends BaseType
             $builder->add($label, SubmitType::class, [
                 'validation_groups' => ['Default'],
             ]);
+        }
+        if (!empty($options['data_class'])) {
+            preg_match('`[^\\\\]*$`', $options['data_class'], $matches);
+            if (empty($options['action']) && $builder->getAction() == "" && isset($matches[0])) {
+                $entityName = $matches[0];
+                $route = strtolower($builder->getMethod().'_'.$entityName);
+                if (!empty($entityName) && $this->router->getRouteCollection()->get($route)) {
+                    if ($builder->getMethod() == 'PUT' || $builder->getMethod() == 'PATCH' || $builder->getMethod() == 'LINK' || $builder->getMethod() == 'UNLINK') {
+                        $id = $builder->getData()->getId();
+                        $options['action'] = $this->router->generate($route, [strtolower($entityName) => $id]);
+                    } else {
+                        $options['action'] = $this->router->generate($route);
+                    }
+                    $builder->setAction($options['action']);
+                }
+            }
         }
 
         $request = $this->requestStack->getCurrentRequest();
