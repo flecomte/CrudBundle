@@ -11,3 +11,8 @@ services:
         class: Jasny\Twig\PcreExtension
         tags:
           - { name: twig.extension }
+    fle_crud.soft_delete_annotation_listener:
+        class: FLE\Bundle\CrudBundle\EventListener\SoftDeleteAnnotationListener
+        arguments: ["@annotation_reader", "@doctrine.orm.entity_manager", "@security.authorization_checker"]
+        tags:
+            - { name: kernel.event_listener, event: kernel.controller }

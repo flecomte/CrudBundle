@@ -2,9 +2,12 @@
 
 namespace FLE\Bundle\CrudBundle\Controller;
 
+use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
+use Doctrine\ORM\Query\FilterCollection;
+use FLE\Bundle\CrudBundle\Form\RestoreType;
 use FOS\ElasticaBundle\Manager\RepositoryManager;
 use FOS\ElasticaBundle\Paginator\PaginatorAdapterInterface;
 use FOS\ElasticaBundle\Repository as SearchRepository;
@@ -14,8 +17,10 @@ use FLE\Bundle\CrudBundle\Form\DeleteType;
 use FLE\Bundle\CrudBundle\Entity\EntityInterface;
 use FLE\Bundle\CrudBundle\Repository\AbstractRepository;
 use FLE\Bundle\CrudBundle\SearchRepository\AbstractRepository as AbstractSearchRepository;
+use Gedmo\Mapping\Annotation\SoftDeleteable;
 use Knp\Bundle\PaginatorBundle\Pagination\SlidingPagination;
 use Knp\Component\Pager\Paginator;
+use ReflectionClass;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\AbstractType;
@@ -77,6 +82,13 @@ abstract class ControllerAbstract extends FOSRestController
      */
     protected function getEntitiesAction(Request $request, $query = null, $bundle = null)
     {
+        $em = $this->getDoctrine()->getManager();
+        /** @var FilterCollection $filters */
+        $filters = $em->getFilters();
+        if (in_array('softdeleteable', array_keys($filters->getEnabledFilters()))) {
+            $filters->disable('softdeleteable');
+        }
+
         if ($bundle === null) {
             $bundle = $this->getBundleName($this);
         }
@@ -125,7 +137,15 @@ abstract class ControllerAbstract extends FOSRestController
 
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
-            $output['delete_form'][$entity->getId()] = $this->createDeleteForm($entity)->createView();
+            if (method_exists($entity, 'isDeleted') && $entity->isDeleted()) {
+                $output['delete_form'][$entity->getId()] = $this->createrestoreForm($entity)->createView();
+            } else {
+                $output['delete_form'][$entity->getId()] = $this->createDeleteForm($entity)->createView();
+            }
+        };
+
+        /** @var EntityInterface $entity */
+        foreach ($entities as $entity) {
         };
 
         $view->setData($output);
@@ -280,7 +300,7 @@ abstract class ControllerAbstract extends FOSRestController
      *
      * @return View
      */
-    protected function deleteEntityAction(Request $request, EntityInterface $entity , $redirectRoute = null, $routeParameters = [])
+    protected function deleteEntityAction(Request $request, EntityInterface $entity, $redirectRoute = null, $routeParameters = [])
     {
         if ($redirectRoute === null) {
             $redirectRoute = $this->createRoute($entity, 'get', true);
@@ -311,6 +331,61 @@ abstract class ControllerAbstract extends FOSRestController
         return $view;
     }
 
+    protected function restoreEntityAction(Request $request, $entity, $redirectRoute = null, $routeParameters = [])
+    {
+        if (!class_exists(SoftDeleteable::class)) {
+            throw new \Exception('need softdeleteable extension for restore entity');
+        }
+
+        $em = $this->getDoctrine()->getManager();
+
+        /** @var FilterCollection $filters */
+        $filters = $em->getFilters();
+        if (in_array('softdeleteable', array_keys($filters->getEnabledFilters()))) {
+            $filters->disable('softdeleteable');
+        }
+
+        if (is_numeric($entity)) {
+            $entity = $this->getRepository()->findOneById($entity);
+        }
+
+        $view = $this->view();
+        $form = $this->createRestoreForm($entity);
+        $form->handleRequest($request);
+
+        if (($form->isSubmitted() && $form->isValid()) || $this->isGranted('ROLE_API')) {
+            $reader = new AnnotationReader();
+            $reflectionClass = new ReflectionClass(get_class($entity));
+
+            $annotation = $reader->getClassAnnotation($reflectionClass, SoftDeleteable::class);
+            $methodName = 'set'.ucfirst($annotation->fieldName);
+            if ($annotation !== null && $reflectionClass->hasMethod($methodName)) {
+                $reflectionClass->getMethod($methodName)->invoke($entity, null);
+            }
+            $em->persist($entity);
+            $em->flush();
+
+            if ($this->has('fos_elastica.index_manager')) {
+                $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
+            }
+
+            $className = strtolower($this->getClassName($entity));
+            $this->addFlash('success', $className.'.flash.restore.success');
+
+            if ($redirectRoute === null) {
+                $redirectRoute = $this->createRoute($entity, 'get', true);
+            }
+
+            $view->setRoute($redirectRoute);
+            $view->setRouteParameters($routeParameters);
+            $view->setStatusCode(204);
+        } else {
+            $view->setStatusCode(400);
+        }
+
+        return $view;
+    }
+
     /**
      * @param EntityInterface $entity
      *
@@ -323,6 +398,21 @@ abstract class ControllerAbstract extends FOSRestController
 
         return $this->createForm(DeleteType::class, null, [
             'action' => $this->generateUrl($this->createRoute($entity, 'delete'), array(lcfirst($className) => $entity->getId()))
+        ]);
+    }
+
+    /**
+     * @param EntityInterface $entity
+     *
+     * @return \Symfony\Component\Form\Form
+     */
+    protected function createRestoreForm (EntityInterface $entity)
+    {
+        $className = $this->getClassName($entity);
+        $className = $this->UpperToLowerUnderscore($className);
+
+        return $this->createForm(RestoreType::class, null, [
+            'action' => $this->generateUrl($this->createRoute($entity, 'restore'), array(lcfirst($className) => $entity->getId()))
         ]);
     }
 

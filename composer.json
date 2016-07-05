@@ -32,7 +32,8 @@
         "satooshi/php-coveralls": "dev-master"
     },
     "suggest": {
-        "friendsofsymfony/elastica-bundle": "dev-master"
+        "friendsofsymfony/elastica-bundle": "dev-master",
+        "stof/doctrine-extensions-bundle": "^1.2"
     },
     "autoload": {
         "psr-4": { "FLE\\Bundle\\CrudBundle\\": "" }

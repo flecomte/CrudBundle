@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="9a750e045d2d09f7c09999dd27e887c2" resname="form.btn.edit">
         <source>form.btn.edit</source>
-        <target>Éditer</target>
+        <target>Modifier</target>
       </trans-unit>
       <trans-unit id="2df0c37fc20a65657e4d669fe33473cd" resname="form.btn.create">
         <source>form.btn.create</source>
@@ -20,6 +20,14 @@
       <trans-unit id="c0bf092a35841220040c5e3d81324dd2" resname="form.btn.update">
         <source>form.btn.update</source>
         <target>Mettre à jour</target>
+      </trans-unit>
+      <trans-unit id="form.btn.disable">
+        <source>form.btn.disable</source>
+        <target>Désactiver</target>
+      </trans-unit>
+      <trans-unit id="form.btn.restore">
+        <source>form.btn.restore</source>
+        <target>Activer</target>
       </trans-unit>
       <trans-unit id="form.reset">
         <source>form.reset</source>
