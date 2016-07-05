@@ -22,7 +22,6 @@
         {% set label = macros.form_btn_parent_name(form) %}
     {%- endif -%}
 
-    {% dump(form.parent.parent) %}
     {%- if form.parent.parent is null and (form.vars.name != 'create' or form.vars.name != 'update' or form.vars.name != 'delete') -%}
         {{ parent() }}
     {%- endif -%}
