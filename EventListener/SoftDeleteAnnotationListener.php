@@ -62,7 +62,7 @@ class SoftDeleteAnnotationListener
         if (!is_array($roles)) {
             $roles = [$roles];
         }
-        if (empty($roles)) {
+        if (empty($roles) || $roles[0] === null) {
             return true;
         }
         $allow = false;
