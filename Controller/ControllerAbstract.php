@@ -24,6 +24,7 @@ use ReflectionClass;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Bundle\FrameworkBundle\Routing\Router;
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Form;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -75,12 +76,12 @@ abstract class ControllerAbstract extends FOSRestController
     /**
      * @param Request                         $request
      * @param Query|PaginatorAdapterInterface $query
-     * @param string                          $bundle
+     * @param string                          $entity
      *
      * @return View
      * @throws \Exception
      */
-    protected function getEntitiesAction(Request $request, $query = null, $bundle = null)
+    protected function getEntitiesAction(Request $request, $query = null, $entity = null)
     {
         $em = $this->getDoctrine()->getManager();
         /** @var FilterCollection $filters */
@@ -89,16 +90,21 @@ abstract class ControllerAbstract extends FOSRestController
             $filters->disable('softdeleteable');
         }
 
-        if ($bundle === null) {
-            $bundle = $this->getBundleName($this);
-        }
         $view = $this->view();
         $output = [];
-        $className = $this->getControllerName($this);
+
         /** @var EntityManager $em */
         $em = $this->getDoctrine()->getManager();
-        /** @var AbstractRepository $repository */
-        $repository = $em->getRepository($bundle.':'.$className);
+        if ($entity != null) {
+            $className = $this->getClassName($entity);
+            /** @var AbstractRepository $repository */
+            $repository = $em->getRepository($entity);
+        } else {
+            $className = $this->getControllerName($this);
+            $bundle = $this->getBundleName($this);
+            /** @var AbstractRepository $repository */
+            $repository = $em->getRepository($bundle.':'.$className);
+        }
 
         if ($query === null && ($formFilter = $this->createFormFilter()) !== null) {
             $formFilter->handleRequest($request);
@@ -115,7 +121,6 @@ abstract class ControllerAbstract extends FOSRestController
             $output['filter'] = $formFilter->createView();
         }
 
-        $className = $this->getClassName($className);
         if ($this->has('knp_paginator') && $request->getRequestFormat() === 'html') {
             if ($query === null) {
                 $query = $repository->createQueryBuilder(strtolower($className))->getQuery();
@@ -134,18 +139,19 @@ abstract class ControllerAbstract extends FOSRestController
 
         $output[$this->plural($className, true)] = $entities;
 
-
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
             if (method_exists($entity, 'isDeleted') && $entity->isDeleted()) {
-                $output['delete_form'][$entity->getId()] = $this->createrestoreForm($entity)->createView();
+                $restoreForm = $this->createRestoreForm($entity);
+                if ($restoreForm instanceof Form) {
+                    $output['delete_form'][$entity->getId()] = $restoreForm->createView();
+                }
             } else {
-                $output['delete_form'][$entity->getId()] = $this->createDeleteForm($entity)->createView();
+                $deleteForm = $this->createDeleteForm($entity);
+                if ($deleteForm instanceof Form) {
+                    $output['delete_form'][$entity->getId()] = $deleteForm->createView();
+                }
             }
-        };
-
-        /** @var EntityInterface $entity */
-        foreach ($entities as $entity) {
         };
 
         $view->setData($output);
@@ -389,16 +395,23 @@ abstract class ControllerAbstract extends FOSRestController
     /**
      * @param EntityInterface $entity
      *
-     * @return \Symfony\Component\Form\Form
+     * @return Form|null
      */
     protected function createDeleteForm (EntityInterface $entity)
     {
         $className = $this->getClassName($entity);
         $className = $this->UpperToLowerUnderscore($className);
 
-        return $this->createForm(DeleteType::class, null, [
-            'action' => $this->generateUrl($this->createRoute($entity, 'delete'), array(lcfirst($className) => $entity->getId()))
-        ]);
+        $route = $this->createRoute($entity, 'delete');
+        /** @var Router $router */
+        $router = $this->container->get('router');
+        if ($router->getRouteCollection()->get($route) !== null) {
+            return $this->createForm(DeleteType::class, null, [
+                'action' => $this->generateUrl($route, array(lcfirst($className) => $entity->getId()))
+            ]);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -411,9 +424,16 @@ abstract class ControllerAbstract extends FOSRestController
         $className = $this->getClassName($entity);
         $className = $this->UpperToLowerUnderscore($className);
 
-        return $this->createForm(RestoreType::class, null, [
-            'action' => $this->generateUrl($this->createRoute($entity, 'restore'), array(lcfirst($className) => $entity->getId()))
-        ]);
+        $route = $this->createRoute($entity, 'restore');
+        /** @var Router $router */
+        $router = $this->container->get('router');
+        if ($router->getRouteCollection()->get($route) !== null) {
+            return $this->createForm(RestoreType::class, null, [
+                'action' => $this->generateUrl($route, array(lcfirst($className) => $entity->getId()))
+            ]);
+        } else {
+            return null;
+        }
     }
 
     /**
