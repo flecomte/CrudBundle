@@ -142,12 +142,12 @@ abstract class ControllerAbstract extends FOSRestController
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
             if (method_exists($entity, 'isDeleted') && $entity->isDeleted()) {
-                $restoreForm = $this->createRestoreForm($entity);
+                $restoreForm = $this->createRestoreForm($entity, $request);
                 if ($restoreForm instanceof Form) {
                     $output['delete_form'][$entity->getId()] = $restoreForm->createView();
                 }
             } else {
-                $deleteForm = $this->createDeleteForm($entity);
+                $deleteForm = $this->createDeleteForm($entity, $request);
                 if ($deleteForm instanceof Form) {
                     $output['delete_form'][$entity->getId()] = $deleteForm->createView();
                 }
@@ -190,7 +190,7 @@ abstract class ControllerAbstract extends FOSRestController
         $className = strtolower($this->getClassName($entity));
         $view->setData([
             $className => $entity,
-            'delete_form' => $this->createDeleteForm($entity)->createView(),
+            'delete_form' => $this->createDeleteForm($entity, $request)->createView(),
         ]);
         return $view;
     }
@@ -251,7 +251,7 @@ abstract class ControllerAbstract extends FOSRestController
         $view->setData([
             $className => $entity,
             'form' => $form->createView(),
-            'delete_form' => $this->createDeleteForm($entity)->createView(),
+            'delete_form' => $this->createDeleteForm($entity, $request)->createView(),
         ]);
         return $view;
     }
@@ -293,7 +293,7 @@ abstract class ControllerAbstract extends FOSRestController
         $view->setData([
             $className => $entity,
             'form'     => $form->createView(),
-            'delete_form' => $this->createDeleteForm($entity)->createView(),
+            'delete_form' => $this->createDeleteForm($entity, $request)->createView(),
         ]);
         return $view;
     }
@@ -308,12 +308,8 @@ abstract class ControllerAbstract extends FOSRestController
      */
     protected function deleteEntityAction(Request $request, EntityInterface $entity, $redirectRoute = null, $routeParameters = [])
     {
-        if ($redirectRoute === null) {
-            $redirectRoute = $this->createRoute($entity, 'get', true);
-        }
-
         $view = $this->view();
-        $form = $this->createDeleteForm($entity);
+        $form = $this->createDeleteForm($entity, $request);
         $form->handleRequest($request);
 
         if (($form->isSubmitted() && $form->isValid()) || $this->isGranted('ROLE_API')) {
@@ -327,8 +323,13 @@ abstract class ControllerAbstract extends FOSRestController
             $className = strtolower($this->getClassName($entity));
             $this->addFlash('success', $className.'.flash.delete.success');
 
-            $view->setRoute($redirectRoute);
-            $view->setRouteParameters($routeParameters);
+            if ($redirectRoute === null && $request->get('redirect') != null) {
+                $view->setLocation($request->get('redirect'));
+            } else {
+                $view->setRoute($redirectRoute ?: $this->createRoute($entity, 'get', true));
+                $view->setRouteParameters($routeParameters);
+            }
+
             $view->setStatusCode(204);
         } else {
             $view->setStatusCode(400);
@@ -356,7 +357,7 @@ abstract class ControllerAbstract extends FOSRestController
         }
 
         $view = $this->view();
-        $form = $this->createRestoreForm($entity);
+        $form = $this->createRestoreForm($entity, $request);
         $form->handleRequest($request);
 
         if (($form->isSubmitted() && $form->isValid()) || $this->isGranted('ROLE_API')) {
@@ -378,12 +379,13 @@ abstract class ControllerAbstract extends FOSRestController
             $className = strtolower($this->getClassName($entity));
             $this->addFlash('success', $className.'.flash.restore.success');
 
-            if ($redirectRoute === null) {
-                $redirectRoute = $this->createRoute($entity, 'get', true);
+            if ($redirectRoute === null && $request->get('redirect') != null) {
+                $view->setLocation($request->get('redirect'));
+            } else {
+                $view->setRoute($redirectRoute ?: $this->createRoute($entity, 'get', true));
+                $view->setRouteParameters($routeParameters);
             }
 
-            $view->setRoute($redirectRoute);
-            $view->setRouteParameters($routeParameters);
             $view->setStatusCode(204);
         } else {
             $view->setStatusCode(400);
@@ -394,10 +396,11 @@ abstract class ControllerAbstract extends FOSRestController
 
     /**
      * @param EntityInterface $entity
+     * @param Request         $request
      *
-     * @return Form|null
+     * @return null|Form
      */
-    protected function createDeleteForm (EntityInterface $entity)
+    protected function createDeleteForm (EntityInterface $entity, Request $request = null)
     {
         $className = $this->getClassName($entity);
         $className = $this->UpperToLowerUnderscore($className);
@@ -406,8 +409,14 @@ abstract class ControllerAbstract extends FOSRestController
         /** @var Router $router */
         $router = $this->container->get('router');
         if ($router->getRouteCollection()->get($route) !== null) {
+            if ($request) {
+                $args = ['redirect' => $request->getUri()];
+            } else {
+                $args = [];
+            }
+
             return $this->createForm(DeleteType::class, null, [
-                'action' => $this->generateUrl($route, array(lcfirst($className) => $entity->getId()))
+                'action' => $this->generateUrl($route, array_merge([lcfirst($className) => $entity->getId()], $args))
             ]);
         } else {
             return null;
@@ -416,10 +425,11 @@ abstract class ControllerAbstract extends FOSRestController
 
     /**
      * @param EntityInterface $entity
+     * @param Request         $request
      *
-     * @return \Symfony\Component\Form\Form
+     * @return Form
      */
-    protected function createRestoreForm (EntityInterface $entity)
+    protected function createRestoreForm (EntityInterface $entity, Request $request = null)
     {
         $className = $this->getClassName($entity);
         $className = $this->UpperToLowerUnderscore($className);
@@ -428,8 +438,14 @@ abstract class ControllerAbstract extends FOSRestController
         /** @var Router $router */
         $router = $this->container->get('router');
         if ($router->getRouteCollection()->get($route) !== null) {
+            if ($request) {
+                $args = ['redirect' => $request->getUri()];
+            } else {
+                $args = [];
+            }
+
             return $this->createForm(RestoreType::class, null, [
-                'action' => $this->generateUrl($route, array(lcfirst($className) => $entity->getId()))
+                'action' => $this->generateUrl($route, array_merge([lcfirst($className) => $entity->getId()], $args))
             ]);
         } else {
             return null;
@@ -574,7 +590,9 @@ abstract class ControllerAbstract extends FOSRestController
 
     protected function addFlash($type, $message)
     {
-        if ($this->container->get('request_stack')->getCurrentRequest()->getRequestFormat() === 'html') {
+        /** @var Request $request */
+        $request = $this->container->get('request_stack')->getCurrentRequest();
+        if ($request->getRequestFormat() === 'html' && !$request->isXmlHttpRequest()) {
             parent::addFlash($type, $message);
         }
     }
