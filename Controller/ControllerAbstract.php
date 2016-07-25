@@ -419,7 +419,7 @@ abstract class ControllerAbstract extends FOSRestController
                 'action' => $this->generateUrl($route, array_merge([lcfirst($className) => $entity->getId()], $args))
             ]);
         } else {
-            return null;
+            return $this->createForm(DeleteType::class);
         }
     }
 
@@ -448,7 +448,7 @@ abstract class ControllerAbstract extends FOSRestController
                 'action' => $this->generateUrl($route, array_merge([lcfirst($className) => $entity->getId()], $args))
             ]);
         } else {
-            return null;
+            return $this->createForm(RestoreType::class);
         }
     }
 
