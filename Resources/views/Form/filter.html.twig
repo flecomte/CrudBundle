@@ -1,0 +1,21 @@
+{% extends '@FLECrudBundle/Resources/views/Form/fields.html.twig' %}
+
+{% block widget_form_group_start %}
+    {% set widget_form_group = false %}
+    {{ parent() }}
+{% endblock widget_form_group_start %}
+
+{% block widget_form_group_end %}
+    {% set widget_form_group = false %}
+    {{ parent() }}
+{% endblock widget_form_group_end %}
+
+{% block form_row %}
+    {% set horizontal = false %}
+    {{ parent() }}
+{% endblock form_row %}
+
+{% block form_widget_compound %}
+    {% set render_fieldset = false %}
+    {{ parent() }}
+{% endblock form_widget_compound %}

@@ -5,6 +5,7 @@
 {% block head_style %}
     {% stylesheets
         '@MopaBootstrapBundle/Resources/public/less/mopabootstrapbundle-fa.less'
+        '@FLECrudBundle/Resources/public/less/base.less'
         '@FLECrudBundle/Resources/public/less/search.less'
         '@FLECrudBundle/Resources/public/less/select2.less'
     %}
@@ -66,8 +67,11 @@
     {% endif %}
 {% endmacro %}
 
+
 {% block content_row %}
     {% from _self import filter %}
+    {% form_theme filter '@FLECrudBundle/Resources/views/Form/filter.html.twig' %}
+
     <div class="row search">
         {% block search %}
             {% if filter is defined and filter is not null and filter.search is defined %}

@@ -112,6 +112,8 @@ abstract class ControllerAbstract extends FOSRestController
                 $searchRepository = $this->getSearchRepository();
                 if ($searchRepository instanceof SearchRepository) {
                     $query = $searchRepository->createPaginatorAdapter($formFilter);
+                } elseif (method_exists($repository, 'filterByForm')) {
+                    $query = $repository->filterByForm($formFilter);
                 } elseif (method_exists($repository, 'findQuery')) {
                     $query = $repository->findQuery($formFilter);
                 } else {

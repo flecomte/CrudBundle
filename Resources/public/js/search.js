@@ -20,7 +20,7 @@ $(document).on('keyup', '.search input', function (e) {
 $(document).on('dp.change', '.search input', function (e) {
     search($(e.target).parents('form'));
 });
-$(document).on('change', '.search select', function (e) {
+$(document).on('change', '.search select, .search input', function (e) {
     search($(this).parents('form'));
 });
 $(function () {

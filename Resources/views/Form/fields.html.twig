@@ -67,15 +67,15 @@
         {%- endif -%}
 {%- endmacro -%}
 
-{%- macro auto_placeolder(id) -%}
-    {%- set idSplit = id|preg_replace('`(__name__|[0-9]+)`', 'n')|replace({'_':'.'})|split('.', 2) -%}
-    {{- idSplit[0] ~ '.' ~ idSplit[1] ~ '.placeholder' -}}
+{%- macro auto_placeolder(name) -%}
+    {%- set name = name|replace({'[':'.'})|replace({']':''}) -%}
+    {{- name ~ '.placeholder' -}}
 {%- endmacro -%}
 
 {%- block choice_widget_collapsed -%}
     {%- import _self as macros -%}
-    {% if placeholder is not defined or placeholder == "" %}
-        {% set placeholder = macros.auto_placeolder(id) %}
+    {% if placeholder is not defined and (translatedPlaceholder != placeholder) %}
+        {% set placeholder = macros.auto_placeolder(form.vars.full_name) %}
     {% endif %}
     {{ parent() }}
 {%- endblock choice_widget_collapsed -%}
@@ -83,14 +83,17 @@
 {%- block widget_attributes -%}
     {%- import _self as macros -%}
     {{ parent() }}
-    {% if placeholder is not defined or placeholder == "" %}
-        {% set placeholder = macros.auto_placeolder(id) %}
+    {% if placeholder is not defined %}
+        {% set placeholder = macros.auto_placeolder(form.vars.full_name) %}
     {% endif %}
     {% if attr['placeholder'] is not defined and placeholder is defined and placeholder != "" %}
         {% set attr = attr|merge({'placeholder': placeholder}) %}
     {% endif %}
     {%- if placeholder is defined and placeholder != "" and not full_name|preg_match('`_token`') and 'radio' not in block_prefixes and 'checkbox' not in block_prefixes -%}
-        {{- ' placeholder' }}="{{ translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain) }}"
+        {% set translatedPlaceholder = translation_domain is same as(false) ? placeholder : placeholder|trans({}, translation_domain) %}
+        {%- if (translatedPlaceholder != placeholder) -%}
+        {{- ' placeholder' }}="{{ translatedPlaceholder }}"
+        {%- endif -%}
     {%- endif -%}
 {%- endblock widget_attributes -%}
 

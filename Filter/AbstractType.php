@@ -4,6 +4,7 @@ namespace FLE\Bundle\CrudBundle\Filter;
 
 use JMS\DiExtraBundle\Annotation as DI;
 use Symfony\Component\Form\AbstractType as BaseType;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\ResetType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -29,6 +30,17 @@ abstract class AbstractType extends BaseType
                     'required' => false
                 ]);
         }
+        $builder->add('limit', ChoiceType::class, [
+            'label' => 'form.limit',
+            'choices' => [
+                10 => 10,
+                20 => 20,
+                50 => 50,
+                100 => 100
+            ],
+            'required' => true,
+            'empty_data' => 10,
+        ]);
         $builder->add('reset', ResetType::class, [
             'label' => 'form.reset'
         ]);
