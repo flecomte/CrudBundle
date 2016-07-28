@@ -70,11 +70,11 @@
 
 {% block content_row %}
     {% from _self import filter %}
-    {% form_theme filter '@FLECrudBundle/Resources/views/Form/filter.html.twig' %}
 
     <div class="row search">
         {% block search %}
             {% if filter is defined and filter is not null and filter.search is defined %}
+                {% form_theme filter '@FLECrudBundle/Resources/views/Form/filter.html.twig' %}
                 {% if limit is not defined %}
                     {% set limit = true %}
                 {% endif %}
