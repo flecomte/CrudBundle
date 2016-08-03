@@ -405,7 +405,6 @@ abstract class ControllerAbstract extends FOSRestController
     protected function createDeleteForm (EntityInterface $entity, Request $request = null)
     {
         $className = $this->getClassName($entity);
-        $className = $this->UpperToLowerUnderscore($className);
 
         $route = $this->createRoute($entity, 'delete');
         /** @var Router $router */

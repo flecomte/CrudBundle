@@ -79,7 +79,7 @@ abstract class AbstractType extends BaseType
                 if (!empty($entityName) && $this->router->getRouteCollection()->get($route)) {
                     if ($builder->getMethod() == 'PUT' || $builder->getMethod() == 'PATCH' || $builder->getMethod() == 'LINK' || $builder->getMethod() == 'UNLINK') {
                         $id = $builder->getData()->getId();
-                        $options['action'] = $this->router->generate($route, [strtolower($entityName) => $id]);
+                        $options['action'] = $this->router->generate($route, [lcfirst($entityName) => $id]);
                     } else {
                         $options['action'] = $this->router->generate($route);
                     }
