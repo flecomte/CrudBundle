@@ -3,6 +3,8 @@ var search = function ($form)
     if (xhr_search != null) {
         xhr_search.abort();
     }
+    $form.addClass('loading');
+    $($form.data('destination')).addClass('loading');
     xhr_search = $.ajax({
         url: window.location.pathname +'?'+ $form.serialize(),
         type: 'GET',
@@ -10,6 +12,9 @@ var search = function ($form)
     }).success(function (data, textStatus, jqXHR) {
         $($form.data('destination')).html(data);
         $form.trigger('searchFinish');
+    }).complete(function () {
+        $form.removeClass('loading');
+        $($form.data('destination')).removeClass('loading');
     });
 };
 
