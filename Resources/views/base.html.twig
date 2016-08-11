@@ -8,6 +8,7 @@
         '@FLECrudBundle/Resources/public/less/base.less'
         '@FLECrudBundle/Resources/public/less/search.less'
         '@FLECrudBundle/Resources/public/less/select2.less'
+        '@FLECrudBundle/Resources/public/less/selectize.less'
     %}
     <link href="{{ asset_url }}" type="text/css" rel="stylesheet" media="screen" />
     {% endstylesheets %}
@@ -67,6 +68,16 @@
     {% endif %}
 {% endmacro %}
 
+{% from 'MopaBootstrapBundle::flash.html.twig' import session_flash %}
+{% block flashes %}
+    <div class="row flashs">
+        <div class="col-sm-12">
+            {% if app.session.flashbag.peekAll|length > 0 %}
+                {{ session_flash(null, null, null, 'flash') }}
+            {% endif %}
+        </div>
+    </div>
+{% endblock flashes %}
 
 {% block content_row %}
     {% from _self import filter %}
@@ -74,7 +85,7 @@
     <div class="row search">
         {% block search %}
             {% if filter is defined and filter is not null and filter.search is defined %}
-                {% form_theme filter '@FLECrudBundle/Resources/views/Form/filter.html.twig' %}
+                {% form_theme filter 'FLECrudBundle::Form/filter.html.twig' %}
                 {% if limit is not defined %}
                     {% set limit = true %}
                 {% endif %}

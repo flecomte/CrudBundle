@@ -282,6 +282,8 @@ abstract class ControllerAbstract extends FOSRestController
                 $this->get('fos_elastica.index_manager')->getIndex('app')->refresh();
             }
 
+            $this->addFlash('success', $className.'.flash.put.success');
+
             if ($redirectRoute === null && $request->get('redirect') != null) {
                 $view->setLocation($request->get('redirect', $this->createRoute($entity, 'get', true)));
             } else {

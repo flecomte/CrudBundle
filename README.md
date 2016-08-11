@@ -53,3 +53,11 @@ twig:
     form_themes:
         - 'FLECrudBundle::Form/fields.html.twig'
 ```
+
+
+Usage
+-----
+
+```twig
+{% extends 'FLECrudBundle::base.html.twig' %}
+```
