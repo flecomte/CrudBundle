@@ -19,3 +19,9 @@
     {% set render_fieldset = false %}
     {{ parent() }}
 {% endblock form_widget_compound %}
+
+{% block form_label %}
+    {% if not compound %}
+        {{ parent() }}
+    {% endif %}
+{% endblock form_label %}

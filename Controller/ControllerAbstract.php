@@ -7,6 +7,7 @@ use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\FilterCollection;
+use FLE\Bundle\CrudBundle\Actions\ActionInterface;
 use FLE\Bundle\CrudBundle\Form\RestoreType;
 use FOS\ElasticaBundle\Manager\RepositoryManager;
 use FOS\ElasticaBundle\Paginator\PaginatorAdapterInterface;
@@ -37,6 +38,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param null|string|EntityInterface $class
      *
      * @return EntityRepository
+     *
+     * @deprecated
      */
     protected function getRepository ($class = null)
     {
@@ -55,6 +58,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param null|string|EntityInterface $class
      *
      * @return AbstractSearchRepository
+     *
+     * @deprecated
      */
     protected function getSearchRepository ($class = null)
     {
@@ -80,9 +85,13 @@ abstract class ControllerAbstract extends FOSRestController
      *
      * @return View
      * @throws \Exception
+     *
+     * @deprecated
      */
     protected function getEntitiesAction(Request $request, $query = null, $entity = null)
     {
+        trigger_error('Controller::getEntitiesAction() is deprecated. Use Controller::buildAction(new CgetAction($entityName))', E_USER_DEPRECATED);
+
         $em = $this->getDoctrine()->getManager();
         /** @var FilterCollection $filters */
         $filters = $em->getFilters();
@@ -166,9 +175,13 @@ abstract class ControllerAbstract extends FOSRestController
      * @param string          $type
      *
      * @return View
+     *
+     * @deprecated
      */
     protected function newEntityAction(Request $request, EntityInterface $entity, $type = null)
     {
+        trigger_error('Controller::newEntityAction() is deprecated. Use Controller::buildAction(new NewAction($entity))', E_USER_DEPRECATED);
+
         $className = strtolower($this->getClassName($entity));
         $form = $this->createForm($type, $entity);
         $view = $this->view();
@@ -178,6 +191,32 @@ abstract class ControllerAbstract extends FOSRestController
             'form' => $form->createView(),
         ]);
         return $view;
+    }
+
+    /**
+     * @param ActionInterface $action
+     *
+     * @return View
+     */
+    protected function initAction (ActionInterface $action)
+    {
+        $action->setContainer($this->container);
+
+        $action->init();
+
+        return $action;
+    }
+
+    /**
+     * @param ActionInterface $action
+     *
+     * @return View
+     */
+    protected function buildAction (ActionInterface $action)
+    {
+        $this->initAction($action);
+
+        return $action->build();
     }
 
     /**
@@ -204,9 +243,13 @@ abstract class ControllerAbstract extends FOSRestController
      * @param null            $type
      *
      * @return View
+     *
+     * @deprecated
      */
     protected function postEntityAction(Request $request, EntityInterface $entity, $redirectRoute = null, $type = null)
     {
+        trigger_error('Controller::postEntityAction() is deprecated. Use Controller::buildAction(new PostAction(new Entity()))', E_USER_DEPRECATED);
+
         $className = strtolower($this->getClassName($entity));
         $form = $this->createForm($type, $entity);
         $form->handleRequest($request);
@@ -244,9 +287,13 @@ abstract class ControllerAbstract extends FOSRestController
      * @param null            $type
      *
      * @return View
+     *
+     * @deprecated
      */
     protected function editEntityAction(Request $request, EntityInterface $entity, $type = null)
     {
+        trigger_error('Controller::editEntityAction() is deprecated. Use Controller::buildAction(new EditAction($entity))', E_USER_DEPRECATED);
+
         $className = strtolower($this->getClassName($entity));
         $form = $this->createForm($type, $entity);
         $view = $this->view();
@@ -265,9 +312,13 @@ abstract class ControllerAbstract extends FOSRestController
      * @param AbstractType    $type
      *
      * @return View
+     *
+     * @deprecated
      */
     protected function putEntityAction(Request $request, EntityInterface $entity, $redirectRoute = null, $type = null)
     {
+        trigger_error('Controller::putEntityAction() is deprecated. Use Controller::buildAction(new PutAction($entity))', E_USER_DEPRECATED);
+
         $className = strtolower($this->getClassName($entity));
 
         $form = $this->createForm($type, $entity);
@@ -309,9 +360,13 @@ abstract class ControllerAbstract extends FOSRestController
      * @param array           $routeParameters
      *
      * @return View
+     *
+     * @deprecated
      */
     protected function deleteEntityAction(Request $request, EntityInterface $entity, $redirectRoute = null, $routeParameters = [])
     {
+        trigger_error('Controller::deleteEntityAction() is deprecated. Use Controller::buildAction(new DeleteAction($entity))', E_USER_DEPRECATED);
+
         $view = $this->view();
         $form = $this->createDeleteForm($entity, $request);
         $form->handleRequest($request);
@@ -342,8 +397,21 @@ abstract class ControllerAbstract extends FOSRestController
         return $view;
     }
 
+    /**
+     * @param Request $request
+     * @param         $entity
+     * @param null    $redirectRoute
+     * @param array   $routeParameters
+     *
+     * @return View
+     * @throws \Exception
+     *
+     * @deprecated
+     */
     protected function restoreEntityAction(Request $request, $entity, $redirectRoute = null, $routeParameters = [])
     {
+        trigger_error('Controller::restoreEntityAction() is deprecated. Use Controller::buildAction(new RestoreAction($entity))', E_USER_DEPRECATED);
+
         if (!class_exists(SoftDeleteable::class)) {
             throw new \Exception('need softdeleteable extension for restore entity');
         }
@@ -403,6 +471,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param Request         $request
      *
      * @return null|Form
+     *
+     * @deprecated
      */
     protected function createDeleteForm (EntityInterface $entity, Request $request = null)
     {
@@ -431,6 +501,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param Request         $request
      *
      * @return Form
+     *
+     * @deprecated
      */
     protected function createRestoreForm (EntityInterface $entity, Request $request = null)
     {
@@ -459,6 +531,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param $entity
      *
      * @return string
+     *
+     * @deprecated
      */
     protected function getClassName ($entity)
     {
@@ -473,6 +547,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param $entity
      *
      * @return string
+     *
+     * @deprecated
      */
     protected function getClassFullName (EntityInterface $entity)
     {
@@ -484,6 +560,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param Controller $controller
      *
      * @return string
+     *
+     * @deprecated
      */
     protected function getControllerName (Controller $controller)
     {
@@ -495,6 +573,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param Controller $controller
      *
      * @return string
+     *
+     * @deprecated
      */
     protected function getBundleName (Controller $controller)
     {
@@ -502,6 +582,13 @@ abstract class ControllerAbstract extends FOSRestController
         return $matches[1];
     }
 
+    /**
+     * @param EntityInterface $entity
+     *
+     * @return string
+     *
+     * @deprecated
+     */
     private function getFormTypeName (EntityInterface $entity)
     {
         preg_match('`(.*)\\\\Entity\\\\(.*)`', get_class($entity), $matches);
@@ -510,6 +597,8 @@ abstract class ControllerAbstract extends FOSRestController
 
     /**
      * @return string|null
+     *
+     * @deprecated
      */
     private function getFormFilterTypeName ()
     {
@@ -529,6 +618,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param array  $options
      *
      * @return \Symfony\Component\Form\Form
+     *
+     * @deprecated
      */
     protected function createForm($type = null, $data = null, array $options = array())
     {
@@ -538,6 +629,15 @@ abstract class ControllerAbstract extends FOSRestController
         return parent::createForm($type, $data, $options);
     }
 
+    /**
+     * @param null  $type
+     * @param null  $data
+     * @param array $options
+     *
+     * @return null|Form
+     *
+     * @deprecated
+     */
     protected function createFormFilter($type = null, $data = null, array $options = array())
     {
         if ($type === null) {
@@ -555,6 +655,8 @@ abstract class ControllerAbstract extends FOSRestController
      * @param bool            $plural
      *
      * @return string
+     *
+     * @deprecated
      */
     protected function createRoute (EntityInterface $entity, $method = 'get', $plural = false)
     {
@@ -574,6 +676,14 @@ abstract class ControllerAbstract extends FOSRestController
         }
     }
 
+    /**
+     * @param      $name
+     * @param bool $lower
+     *
+     * @return string
+     *
+     * @deprecated
+     */
     protected function plural ($name, $lower = false)
     {
         $count = preg_match_all('`[A-Z]+[a-z]+`', $name, $matches);
@@ -586,11 +696,22 @@ abstract class ControllerAbstract extends FOSRestController
         return $lower ? $this->UpperToLowerUnderscore($pl) : $pl;
     }
 
+    /**
+     * @param $name
+     *
+     * @return string
+     *
+     * @deprecated
+     */
     protected function UpperToLowerUnderscore ($name)
     {
         return strtolower(preg_replace('/\B([A-Z])/', '_$1', $name));
     }
 
+    /**
+     * @param string $type
+     * @param string $message
+     */
     protected function addFlash($type, $message)
     {
         /** @var Request $request */

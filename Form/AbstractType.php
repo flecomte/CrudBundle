@@ -67,9 +67,7 @@ abstract class AbstractType extends BaseType
             } else {
                 $label = 'update';
             }
-            $builder->add($label, SubmitType::class, [
-                'validation_groups' => ['Default'],
-            ]);
+            $builder->add($label, SubmitType::class);
         }
         if (!empty($options['data_class'])) {
             preg_match('`[^\\\\]*$`', $options['data_class'], $matches);

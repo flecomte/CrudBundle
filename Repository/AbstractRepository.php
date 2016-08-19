@@ -3,11 +3,13 @@
 namespace FLE\Bundle\CrudBundle\Repository;
 
 use Doctrine\ORM\EntityRepository;
+use FLE\Bundle\CrudBundle\Annotation\SearchRepository;
 use Symfony\Component\Form\Form;
 
 /**
- * Class AbstractRepository
- * @package FLE\Bundle\CrudBundle\Repository
+ * @SearchRepository(method="filterByForm")
+ *
+ * @deprecated
  */
 class AbstractRepository extends EntityRepository
 {
@@ -16,6 +18,11 @@ class AbstractRepository extends EntityRepository
         return parent::findBy([], ['id' => 'ASC']);
     }
 
+    /**
+     * @param Form|null $form
+     *
+     * @return array
+     */
     public function filterByForm (Form $form = null)
     {
         $qb = $this->createQueryBuilder('t');
