@@ -229,9 +229,7 @@ abstract class ActionAbstract implements ActionInterface
                 if ($subForm->getConfig()->getType()->getBlockPrefix() == "text") {
                     $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
                 } elseif ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
-//                    dump($alias, $key, $subForm);
                     $this->AddWhereForSubForm($subForm, $qb);
-//                    $qb->andWhere("$alias.$key = :$key")->setParameter($key, $value->getId());
                 } else {
                     $qb->andWhere("$alias.$key = :$key")->setParameter($key, $value);
                 }
@@ -247,7 +245,6 @@ abstract class ActionAbstract implements ActionInterface
     private function AddWhereForSubForm (FormInterface $form, QueryBuilder $qb)
     {
         foreach ($form->all() as $subForm) {
-            dump($subForm, $subForm->getName(), $subForm->getData(), $form->getName());
             if ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
                 $this->AddWhereForSubForm($subForm, $qb);
             } else {
