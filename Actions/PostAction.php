@@ -56,10 +56,8 @@ class PostAction extends EditAction
         }
 
         $view->setData([
-            $className     => $this->getEntity(),
-            'form'         => $form->createView(),
-            'delete_form'  => $this->getDeleteForm() ?: $this->createDeleteForm($this->getEntity(), $request)->createView(),
-            'restore_form' => $this->getRestoreForm() ?: $this->createRestoreForm($this->getEntity(), $request)->createView()
+            $className => $this->getEntity(),
+            'form'     => $form->createView(),
         ]);
         return $view;
     }
