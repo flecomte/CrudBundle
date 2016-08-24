@@ -42,6 +42,21 @@ class ScriptHandler extends \Sensio\Bundle\DistributionBundle\Composer\ScriptHan
     /**
      * @param $event Event A instance
      */
+    public static function doctrineMigration(Event $event)
+    {
+        $options = self::getOptions($event);
+        $consoleDir = self::getConsoleDir($event, 'SQL Migration');
+
+        if (null === $consoleDir) {
+            return;
+        }
+
+        static::executeCommand($event, $consoleDir, 'doctrine:migrations:migrate --no-interaction', $options['process-timeout']);
+    }
+
+    /**
+     * @param $event Event A instance
+     */
     public static function bootstrapFontInstall(Event $event)
     {
         $options = self::getOptions($event);
