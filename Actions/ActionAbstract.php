@@ -225,7 +225,7 @@ abstract class ActionAbstract implements ActionInterface
         foreach ($form->getIterator() as $key => $subForm) {
             $value = $subForm->getData();
 
-            if ($value != null) {
+            if ($value !== null) {
                 if ($subForm->getConfig()->getType()->getBlockPrefix() == "text") {
                     $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
                 } elseif ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
