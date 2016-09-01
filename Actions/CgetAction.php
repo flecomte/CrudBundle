@@ -5,6 +5,7 @@ namespace FLE\Bundle\CrudBundle\Actions;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\FilterCollection;
+use FLE\Bundle\CrudBundle\Entity\EntityAbstract;
 use FLE\Bundle\CrudBundle\Entity\EntityInterface;
 use FLE\Bundle\CrudBundle\Repository\AbstractRepository;
 use FOS\ElasticaBundle\Repository as SearchRepository;
@@ -168,5 +169,20 @@ class CgetAction extends ActionAbstract
         $this->addViewData('delete_form', $deleteForms);
 
         return $view;
+    }
+
+    /**
+     * @return bool|EntityAbstract[]
+     * @throws \Exception
+     */
+    public function getEntities ()
+    {
+        $key = $this->plural(strtolower($this->getClassBaseName($this->getEntityName())), true);
+        $entities = $this->getViewData($key);
+        if (!$entities) {
+            $this->build();
+            $entities = $this->getViewData($this->getEntityName());
+        }
+        return $entities;
     }
 }

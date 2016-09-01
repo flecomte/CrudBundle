@@ -392,8 +392,19 @@ abstract class ActionAbstract implements ActionInterface
 
     public function addViewData ($key, $value)
     {
-        $data = $this->view->getData();
+        $data = $this->view()->getData();
         $data[$key] = $value;
-        $this->view->setData($data);
+        $this->view()->setData($data);
+    }
+
+    /**
+     * @param $key
+     *
+     * @return mixed|bool
+     */
+    public function getViewData ($key)
+    {
+        $data = $this->view()->getData();
+        return isset($data[$key]) ? $data[$key] : false;
     }
 }
