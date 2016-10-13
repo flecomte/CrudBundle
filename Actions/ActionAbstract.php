@@ -110,15 +110,24 @@ abstract class ActionAbstract implements ActionInterface
     {
         if ($type === null && is_object($data)) {
             $reflectionClass = new \ReflectionClass(get_class($data));
-            $reader = new AnnotationReader();
-            /** @var CRUD\Form $annotation */
-            $annotation = $reader->getClassAnnotation($reflectionClass, CRUD\Form::class);
+            $annotation = $this->getAnnotation($reflectionClass, CRUD\Form::class);
             if ($annotation === null) {
                 return null;
             }
             $type = $annotation->class;
         }
         return $this->container->get('form.factory')->create($type, $data, $options);
+    }
+
+    protected function getAnnotation (\ReflectionClass $reflectionClass, $annotationName)
+    {
+        $reader = new AnnotationReader();
+        $annotation = $reader->getClassAnnotation($reflectionClass, $annotationName);
+        if ($annotation !== null) {
+            return $annotation;
+        } else {
+            return $this->getAnnotation($reflectionClass->getParentClass(), $annotationName);
+        }
     }
 
     /**
