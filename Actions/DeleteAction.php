@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class DeleteAction extends GetAction
 {
     use RedirectActionTrait;
+    use EventTrait;
 
     /**
      * @return View
@@ -24,9 +25,14 @@ class DeleteAction extends GetAction
         $form = $this->createDeleteForm($this->getEntity(), $request);
         $form->handleRequest($request);
 
+        $this->postSubmit($this->getEntity(), $form, $view);
+
         if (($form->isSubmitted() && $form->isValid()) || $this->isGranted('ROLE_API')) {
             $em = $this->getDoctrine()->getManager();
             $em->remove($this->getEntity());
+
+            $this->preFlush($this->getEntity(), $form, $view);
+
             $em->flush();
             if ($this->container->has('fos_elastica.index_manager')) {
                 $this->container->get('fos_elastica.index_manager')->getIndex('app')->refresh();

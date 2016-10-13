@@ -2,6 +2,9 @@
 
 namespace FLE\Bundle\CrudBundle\Actions;
 
+use FOS\RestBundle\View\View;
+use Symfony\Component\HttpFoundation\RequestStack;
+
 class PutAction extends PostAction
 {
 

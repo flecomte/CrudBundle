@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class PostAction extends EditAction
 {
     use RedirectActionTrait;
+    use EventTrait;
 
     protected $buttonNames = [
         'put' => 'update',
@@ -33,15 +34,20 @@ class PostAction extends EditAction
             throw new \Exception('The form for the entity must be defined in controller or via Annotation');
         }
 
+        $view = $this->view();
         $form = $this->getForm();
         $form->handleRequest($request);
-        $formMethod = strtolower($form->getConfig()->getMethod());
-        $view = $this->view();
 
+        $this->postSubmit($this->getEntity(), $form, $view);
+
+        $formMethod = strtolower($form->getConfig()->getMethod());
         $buttonName = $this->buttonNames[$formMethod];
         if ($form->isSubmitted() && $form->isValid() && ($this->isGranted('ROLE_API') || ($form->has($buttonName) && $form->get($buttonName)->isClicked()))) {
             $em = $this->getDoctrine()->getManager();
             $em->persist($this->getEntity());
+
+            $this->preFlush($this->getEntity(), $form, $view);
+
             $em->flush();
             if ($this->container->has('fos_elastica.index_manager')) {
                 $this->container->get('fos_elastica.index_manager')->getIndex('app')->refresh();

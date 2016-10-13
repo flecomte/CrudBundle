@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 class RestoreAction extends GetAction
 {
     use RedirectActionTrait;
+    use EventTrait;
 
     /**
      * @return View
@@ -39,6 +40,8 @@ class RestoreAction extends GetAction
         $form = $this->createRestoreForm($this->getEntity(), $request);
         $form->handleRequest($request);
 
+        $this->postSubmit($this->getEntity(), $form, $view);
+
         if (($form->isSubmitted() && $form->isValid()) || $this->isGranted('ROLE_API')) {
             $reader = new AnnotationReader();
             $reflectionClass = new ReflectionClass(get_class($this->getEntity()));
@@ -49,6 +52,9 @@ class RestoreAction extends GetAction
                 $reflectionClass->getMethod($methodName)->invoke($this->getEntity(), null);
             }
             $em->persist($this->getEntity());
+
+            $this->preFlush($this->getEntity(), $form, $view);
+
             $em->flush();
 
             if ($this->container->has('fos_elastica.index_manager')) {
