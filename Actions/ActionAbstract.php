@@ -195,6 +195,7 @@ abstract class ActionAbstract implements ActionInterface
      * @param $className
      *
      * @return \ReflectionMethod|null
+     * @throws \Exception
      */
     private function getRepositoryFilterMethod ($className)
     {
@@ -206,10 +207,20 @@ abstract class ActionAbstract implements ActionInterface
         $reader = new AnnotationReader();
         /** @var CRUD\SearchRepository $annotation */
         $annotation = $reader->getClassAnnotation($reflectionClass, CRUD\SearchRepository::class);
-        if ($annotation !== null && $reflectionClass->hasMethod($annotation->method)) {
-            $method = $reflectionClass->getMethod($annotation->method);
-            if ($method->getNumberOfRequiredParameters() == 1 && $method->getParameters()[0]->getClass()->getName() == Form::class) {
-                return $method;
+        $repository = $this->getDoctrine()->getRepository($className);
+        if ($repository instanceof EntityRepository) {
+            $reflectionRepository = new \ReflectionClass(get_class($repository));
+            if ($annotation !== null && $reflectionRepository->hasMethod($annotation->method)) {
+                $method = $reflectionRepository->getMethod($annotation->method);
+                if ($method->getNumberOfRequiredParameters() == 1 && $method->getParameters()[0]->getClass()->getName() == Form::class) {
+                    return $method;
+                } else {
+                    throw new \Exception($annotation->method.' must have parameter Form');
+                }
+            } elseif ($annotation === null) {
+                return null;
+            } else {
+                throw new \Exception(get_class($repository).' must have method '.$annotation->method);
             }
         }
 
@@ -235,12 +246,16 @@ abstract class ActionAbstract implements ActionInterface
             $value = $subForm->getData();
 
             if ($value !== null) {
-                if ($subForm->getConfig()->getType()->getBlockPrefix() == "text") {
-                    $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
-                } elseif ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
-                    $this->AddWhereForSubForm($subForm, $qb);
-                } else {
-                    $qb->andWhere("$alias.$key = :$key")->setParameter($key, $value);
+                if ($value instanceof \Closure) {
+                    $value($qb, $alias);
+                } elseif ($subForm->getConfig()->getMapped()) {
+                    if ($subForm->getConfig()->getType()->getBlockPrefix() == "text") {
+                        $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
+                    } elseif ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
+                        $this->addWhereForSubForm($subForm, $qb);
+                    } else {
+                        $qb->andWhere("$alias.$key = :$key")->setParameter($key, $value);
+                    }
                 }
             }
             if (in_array(get_class($subForm->getConfig()->getType()->getInnerType()), [EntityType::class, FormType::class])) {
@@ -251,11 +266,11 @@ abstract class ActionAbstract implements ActionInterface
         return $qb->getQuery();
     }
 
-    private function AddWhereForSubForm (FormInterface $form, QueryBuilder $qb)
+    private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb)
     {
         foreach ($form->all() as $subForm) {
             if ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
-                $this->AddWhereForSubForm($subForm, $qb);
+                $this->addWhereForSubForm($subForm, $qb);
             } else {
                 $alias = $form->getName();
                 $key = $subForm->getName();
@@ -280,7 +295,7 @@ abstract class ActionAbstract implements ActionInterface
         } else {
             $pl = substr($name, -1) == 'y' ? substr($name, 0, -1).'ies' : $name.'s';
         }
-        return $lower ? $this->UpperToLowerUnderscore($pl) : $pl;
+        return $lower ? $this->upperToLowerUnderscore($pl) : $pl;
     }
 
     /**
@@ -288,7 +303,7 @@ abstract class ActionAbstract implements ActionInterface
      *
      * @return string
      */
-    protected function UpperToLowerUnderscore ($name)
+    protected function upperToLowerUnderscore ($name)
     {
         return strtolower(preg_replace('/\B([A-Z])/', '_$1', $name));
     }

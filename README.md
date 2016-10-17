@@ -61,3 +61,52 @@ Usage
 ```twig
 {% extends 'FLECrudBundle::base.html.twig' %}
 ```
+
+### Filter
+
+Custom Filter
+```php
+<?php
+
+use FLE\Bundle\CrudBundle\Annotation as CRUD;
+use Doctrine\ORM\Mapping as ORM;
+
+/**
+ * @ORM\Entity(repositoryClass="AppBundle\Repository\ObjectRepository")
+ * @CRUD\FormFilter(class="AppBundle\Filter\ObjectFilterType")
+ */
+class Object
+{
+    //...
+}
+```
+
+```php
+<?php
+
+use FLE\Bundle\CrudBundle\Filter\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Doctrine\ORM\QueryBuilder;
+
+class ObjectFilterType extends AbstractType
+{
+    /**
+     * @param FormBuilderInterface $builder
+     * @param array $options
+     */
+    public function buildForm(FormBuilderInterface $builder, array $options)
+    {
+        $builder->add('articleType', ChoiceType::class, [
+            'choices' => [
+                'withArticle' => function (QueryBuilder $qb, $rootAlias) {
+                    return $qb
+                        ->andWhere("$rootAlias.article IS NOT NULL");
+                },
+                'all' => null
+            ],
+            'mapped' => false
+        ]);
+    }
+}
+```
