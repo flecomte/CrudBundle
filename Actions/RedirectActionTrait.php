@@ -24,7 +24,7 @@ trait RedirectActionTrait
      *
      * @return null|void
      */
-    protected function setRedirectRoute ($route)
+    public function setRedirectRoute ($route)
     {
         if ($route === null) {
             $this->redirectRoute = null;
