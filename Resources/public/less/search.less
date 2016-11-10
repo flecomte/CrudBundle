@@ -6,6 +6,15 @@
 
 .search form.navbar-form {
   padding: 0 0 0 34px;
+  display: flex;
+  flex-direction: row;
+  white-space: nowrap;
+  max-width: 100%;
+  flex-wrap: wrap;
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
   &:before {
     position: absolute;
     z-index: 1000;
@@ -22,8 +31,6 @@
     animation:spin 4s linear infinite;
   }
   label {
-    position: absolute;
-    margin: -18px 0 0 0;
     font-size: 12px;
     padding: 0 4px;
     font-weight: normal;

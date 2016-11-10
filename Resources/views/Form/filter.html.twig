@@ -1,12 +1,16 @@
 {% extends '@FLECrudBundle/Resources/views/Form/fields.html.twig' %}
 
 {% block widget_form_group_start %}
-    {% set widget_form_group = false %}
+    {% if form.children != null %}
+        {% set widget_form_group = false %}
+    {% endif %}
     {{ parent() }}
 {% endblock widget_form_group_start %}
 
 {% block widget_form_group_end %}
-    {% set widget_form_group = false %}
+    {% if form.children != null %}
+        {% set widget_form_group = false %}
+    {% endif %}
     {{ parent() }}
 {% endblock widget_form_group_end %}
 
