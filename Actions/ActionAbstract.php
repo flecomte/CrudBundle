@@ -19,6 +19,7 @@ use Symfony\Component\Form\Extension\Core\Type\FormType;
 use Symfony\Component\Form\Form;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Router;
 
 abstract class ActionAbstract implements ActionInterface
@@ -238,11 +239,20 @@ abstract class ActionAbstract implements ActionInterface
         /** @var EntityRepository $repository */
         $repository = $this->getDoctrine()->getRepository($className);
 
-        $alias = strtolower($this->getClassBaseName($className));
-
+        $alias = strtolower($this->getClassBaseName($form->getConfig()->getDataClass()));
         $qb = $repository->createQueryBuilder($alias);
-        /** @var Form $subForm */
-        foreach ($form->getIterator() as $key => $subForm) {
+        $this->addWhereForSubForm($form, $qb);
+        return $qb->getQuery();
+    }
+
+    private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb)
+    {
+        $alias = strtolower($this->getClassBaseName($form->getConfig()->getDataClass()));
+        /**
+         * @var string $key
+         * @var FormInterface $subForm
+         */
+        foreach ($form->all() as $key => $subForm) {
             $value = $subForm->getData();
 
             if ($value !== null) {
@@ -251,31 +261,17 @@ abstract class ActionAbstract implements ActionInterface
                 } elseif ($subForm->getConfig()->getMapped()) {
                     if ($subForm->getConfig()->getType()->getBlockPrefix() == "text") {
                         $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
-                    } elseif ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
-                        $this->addWhereForSubForm($subForm, $qb);
                     } else {
-                        $qb->andWhere("$alias.$key = :$key")->setParameter($key, $value);
+                        if (get_class($subForm->getConfig()->getType()->getInnerType()) == EntityType::class) {
+                            $qb->join($alias.'.'.$key, $key);
+                            $qb->andWhere("$key.id = :{$key}_id")->setParameter($key.'_id', $value->getId());
+                        } elseif (get_class($subForm->getConfig()->getType()->getInnerType()) == FormType::class) {
+                            $aliasChild = strtolower($this->getClassBaseName($subForm->getConfig()->getDataClass()));
+                            $qb->join($alias.'.'.$key, $aliasChild);
+                            $this->addWhereForSubForm($subForm, $qb);
+                        }
                     }
                 }
-            }
-            if (in_array(get_class($subForm->getConfig()->getType()->getInnerType()), [EntityType::class, FormType::class])) {
-                $name = $subForm->getConfig()->getName();
-                $qb->join($alias.'.'.$name, $name);
-            }
-        }
-        return $qb->getQuery();
-    }
-
-    private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb)
-    {
-        foreach ($form->all() as $subForm) {
-            if ($subForm->getConfig()->getType()->getBlockPrefix() == "form") {
-                $this->addWhereForSubForm($subForm, $qb);
-            } else {
-                $alias = $form->getName();
-                $key = $subForm->getName();
-                $value = $subForm->getData();
-                $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
             }
         }
     }
@@ -309,13 +305,12 @@ abstract class ActionAbstract implements ActionInterface
     }
 
     /**
-     * @param string          $type
+     * @param string $type
      * @param EntityInterface $entity
-     * @param Request         $request
      *
      * @return null|Form
      */
-    private function createActionForm ($type, EntityInterface $entity, Request $request = null)
+    private function createActionForm ($type, EntityInterface $entity)
     {
         $classBaseName = lcfirst($this->getClassBaseName($entity));
 
@@ -324,6 +319,9 @@ abstract class ActionAbstract implements ActionInterface
         /** @var Router $router */
         $router = $this->container->get('router');
         if ($router->getRouteCollection()->get($route) !== null) {
+            /** @var RequestStack $requestStack */
+            $requestStack = $this->container->get('request_stack');
+            $request = $requestStack->getCurrentRequest();
             if ($request) {
                 $args = ['redirect' => $request->getUri()];
             } else {
@@ -342,24 +340,22 @@ abstract class ActionAbstract implements ActionInterface
 
     /**
      * @param EntityInterface $entity
-     * @param Request         $request
      *
      * @return null|Form
      */
-    protected function createDeleteForm (EntityInterface $entity, Request $request = null)
+    protected function createDeleteForm (EntityInterface $entity)
     {
-        return $this->createActionForm(DeleteType::class, $entity, $request);
+        return $this->createActionForm(DeleteType::class, $entity);
     }
 
     /**
      * @param EntityInterface $entity
-     * @param Request         $request
      *
      * @return Form
      */
-    protected function createRestoreForm (EntityInterface $entity, Request $request = null)
+    protected function createRestoreForm (EntityInterface $entity)
     {
-        return $this->createActionForm(RestoreType::class, $entity, $request);
+        return $this->createActionForm(RestoreType::class, $entity);
     }
 
     /**

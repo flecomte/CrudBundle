@@ -151,24 +151,35 @@ class CgetAction extends ActionAbstract
 
         $this->addViewData($this->plural($classBaseName, true), $entities);
 
+        $deleteForms = $this->createDeleteForms($entities);
+        $this->addViewData('delete_form', $deleteForms);
+
+        return $view;
+    }
+
+    /**
+     * @param $entities
+     *
+     * @return \Symfony\Component\Form\FormView[]
+     */
+    public function createDeleteForms ($entities)
+    {
         $deleteForms = [];
         /** @var EntityInterface $entity */
         foreach ($entities as $entity) {
             if (method_exists($entity, 'isDeleted') && $entity->isDeleted()) {
-                $restoreForm = $this->createRestoreForm($entity, $request);
+                $restoreForm = $this->createRestoreForm($entity);
                 if ($restoreForm instanceof Form) {
                     $deleteForms[$entity->getId()] = $restoreForm->createView();
                 }
             } else {
-                $deleteForm = $this->createDeleteForm($entity, $request);
+                $deleteForm = $this->createDeleteForm($entity);
                 if ($deleteForm instanceof Form) {
                     $deleteForms[$entity->getId()] = $deleteForm->createView();
                 }
             }
         };
-        $this->addViewData('delete_form', $deleteForms);
-
-        return $view;
+        return $deleteForms;
     }
 
     /**

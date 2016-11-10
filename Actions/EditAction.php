@@ -64,16 +64,12 @@ class EditAction extends NewAction
             throw new \Exception('The form for the entity must be defined in controller or via Annotation');
         }
 
-        /** @var RequestStack $requestStack */
-        $requestStack = $this->container->get('request_stack');
-        $request = $requestStack->getCurrentRequest();
-
         $view = $this->view();
         $view->setData([
             $className    => $this->getEntity(),
             'form'        => $this->getForm()->createView(),
-            'delete_form' => $this->getDeleteForm() ?: $this->createDeleteForm($this->getEntity(), $request)->createView(),
-            'restore_form' => $this->getRestoreForm() ?: $this->createRestoreForm($this->getEntity(), $request)->createView()
+            'delete_form' => $this->getDeleteForm() ?: $this->createDeleteForm($this->getEntity())->createView(),
+            'restore_form' => $this->getRestoreForm() ?: $this->createRestoreForm($this->getEntity())->createView()
         ]);
         return $view;
     }
