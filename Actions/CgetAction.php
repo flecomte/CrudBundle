@@ -183,6 +183,28 @@ class CgetAction extends ActionAbstract
     }
 
     /**
+     * @param EntityInterface $entity
+     *
+     * @return \Symfony\Component\Form\FormView
+     */
+    public function createDeleteOrRestoreForm (EntityInterface $entity)
+    {
+        $deleteForm = null;
+            if (method_exists($entity, 'isDeleted') && $entity->isDeleted()) {
+                $restoreForm = $this->createRestoreForm($entity);
+                if ($restoreForm instanceof Form) {
+                    $deleteForm = $restoreForm->createView();
+                }
+            } else {
+                $deleteForm = $this->createDeleteForm($entity);
+                if ($deleteForm instanceof Form) {
+                    $deleteForm = $deleteForm->createView();
+                }
+            }
+        return $deleteForm;
+    }
+
+    /**
      * @return bool|EntityAbstract[]
      * @throws \Exception
      */
