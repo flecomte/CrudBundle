@@ -343,7 +343,7 @@ abstract class ActionAbstract implements ActionInterface
      *
      * @return null|Form
      */
-    protected function createDeleteForm (EntityInterface $entity)
+    public function createDeleteForm (EntityInterface $entity)
     {
         return $this->createActionForm(DeleteType::class, $entity);
     }
@@ -353,7 +353,7 @@ abstract class ActionAbstract implements ActionInterface
      *
      * @return Form
      */
-    protected function createRestoreForm (EntityInterface $entity)
+    public function createRestoreForm (EntityInterface $entity)
     {
         return $this->createActionForm(RestoreType::class, $entity);
     }
