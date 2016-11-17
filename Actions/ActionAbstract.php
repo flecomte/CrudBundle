@@ -4,6 +4,7 @@ namespace FLE\Bundle\CrudBundle\Actions;
 
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use FLE\Bundle\CrudBundle\Annotation as CRUD;
@@ -263,8 +264,16 @@ abstract class ActionAbstract implements ActionInterface
                         $qb->andWhere("lower($alias.$key) LIKE lower(:$key)")->setParameter($key, '%'.$value.'%');
                     } else {
                         if (get_class($subForm->getConfig()->getType()->getInnerType()) == EntityType::class) {
-                            $qb->join($alias.'.'.$key, $key);
-                            $qb->andWhere("$key.id = :{$key}_id")->setParameter($key.'_id', $value->getId());
+                            if(is_array($value) || $value instanceof ArrayCollection) {
+                                foreach ($value as $k => $v) {
+                                    $subAlias = $key.'_'.$k;
+                                    $qb->join($alias.'.'.$key, $subAlias);
+                                    $qb->andWhere("$subAlias.id = :{$subAlias}_id")->setParameter("{$subAlias}_id", $v->getId());
+                                }
+                            } else {
+                                $qb->join($alias.'.'.$key, $key);
+                                $qb->andWhere("$key.id = :{$key}_id")->setParameter("{$key}_id", $value->getId());
+                            }
                         } elseif (get_class($subForm->getConfig()->getType()->getInnerType()) == FormType::class) {
                             $aliasChild = strtolower($this->getClassBaseName($subForm->getConfig()->getDataClass()));
                             $qb->join($alias.'.'.$key, $aliasChild);
