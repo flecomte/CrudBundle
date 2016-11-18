@@ -5,6 +5,7 @@ namespace FLE\Bundle\CrudBundle\Actions;
 use Doctrine\Bundle\DoctrineBundle\Registry;
 use Doctrine\Common\Annotations\AnnotationReader;
 use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ORM\EntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use FLE\Bundle\CrudBundle\Annotation as CRUD;
@@ -291,26 +292,16 @@ abstract class ActionAbstract implements ActionInterface
      *
      * @return string
      */
-    protected function plural ($name, $lower = false)
+    protected function plural ($name, $lower = null)
     {
-        $count = preg_match_all('`[A-Z]+[a-z]+`', $name, $matches);
-        if ($count > 1) {
-            list($first, $rest) = $matches[0];
-            $pl = substr($first, -1) == 'y' ? substr($first, 0, -1).'ies'.$rest : $first.'s'.$rest;
+        $name = Inflector::pluralize($name);
+        if ($lower === null) {
+            return $name;
+        } elseif ($lower === true) {
+            return Inflector::tableize($name);
         } else {
-            $pl = substr($name, -1) == 'y' ? substr($name, 0, -1).'ies' : $name.'s';
+            return Inflector::camelize($name);
         }
-        return $lower ? $this->upperToLowerUnderscore($pl) : $pl;
-    }
-
-    /**
-     * @param $name
-     *
-     * @return string
-     */
-    protected function upperToLowerUnderscore ($name)
-    {
-        return strtolower(preg_replace('/\B([A-Z])/', '_$1', $name));
     }
 
     /**

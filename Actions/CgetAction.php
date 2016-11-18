@@ -149,7 +149,7 @@ class CgetAction extends ActionAbstract
             $entities = $repository->findAll();
         }
 
-        $this->addViewData($this->plural($classBaseName, true), $entities);
+        $this->addViewData($this->plural($classBaseName, false), $entities);
 
         $deleteForms = $this->createDeleteForms($entities);
         $this->addViewData('delete_form', $deleteForms);
@@ -210,7 +210,7 @@ class CgetAction extends ActionAbstract
      */
     public function getEntities ()
     {
-        $key = $this->plural(strtolower($this->getClassBaseName($this->getEntityName())), true);
+        $key = $this->plural(strtolower($this->getClassBaseName($this->getEntityName())), false);
         $entities = $this->getViewData($key);
         if (!$entities) {
             $this->build();
