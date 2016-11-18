@@ -241,7 +241,7 @@ abstract class ActionAbstract implements ActionInterface
         /** @var EntityRepository $repository */
         $repository = $this->getDoctrine()->getRepository($className);
 
-        $alias = strtolower($this->getClassBaseName($form->getConfig()->getDataClass()));
+        $alias = Inflector::camelize($this->getClassBaseName($form->getConfig()->getDataClass()));
         $qb = $repository->createQueryBuilder($alias);
         $this->addWhereForSubForm($form, $qb);
         return $qb->getQuery();
@@ -249,7 +249,7 @@ abstract class ActionAbstract implements ActionInterface
 
     private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb)
     {
-        $alias = strtolower($this->getClassBaseName($form->getConfig()->getDataClass()));
+        $alias = Inflector::camelize($this->getClassBaseName($form->getConfig()->getDataClass()));
         /**
          * @var string $key
          * @var FormInterface $subForm

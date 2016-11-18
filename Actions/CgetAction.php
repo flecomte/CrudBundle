@@ -2,6 +2,7 @@
 
 namespace FLE\Bundle\CrudBundle\Actions;
 
+use Doctrine\Common\Inflector\Inflector;
 use Doctrine\ORM\EntityManager;
 use Doctrine\ORM\Query;
 use Doctrine\ORM\Query\FilterCollection;
@@ -135,7 +136,7 @@ class CgetAction extends ActionAbstract
 
         if ($this->container->has('knp_paginator') && $request->getRequestFormat() === 'html') {
             if ($result === null) {
-                $result = $repository->createQueryBuilder(strtolower($classBaseName))->getQuery();
+                $result = $repository->createQueryBuilder(Inflector::camelize($classBaseName))->getQuery();
             }
             /** @var Paginator $paginator */
             $paginator = $this->container->get('knp_paginator');
