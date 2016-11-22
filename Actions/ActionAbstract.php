@@ -243,13 +243,12 @@ abstract class ActionAbstract implements ActionInterface
 
         $alias = Inflector::camelize($this->getClassBaseName($form->getConfig()->getDataClass()));
         $qb = $repository->createQueryBuilder($alias);
-        $this->addWhereForSubForm($form, $qb);
+        $this->addWhereForSubForm($form, $qb, $alias);
         return $qb->getQuery();
     }
 
-    private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb)
+    private function addWhereForSubForm (FormInterface $form, QueryBuilder $qb, $alias)
     {
-        $alias = Inflector::camelize($this->getClassBaseName($form->getConfig()->getDataClass()));
         /**
          * @var string $key
          * @var FormInterface $subForm
@@ -276,9 +275,8 @@ abstract class ActionAbstract implements ActionInterface
                                 $qb->andWhere("$key.id = :{$key}_id")->setParameter("{$key}_id", $value->getId());
                             }
                         } elseif (get_class($subForm->getConfig()->getType()->getInnerType()) == FormType::class) {
-                            $aliasChild = strtolower($this->getClassBaseName($subForm->getConfig()->getDataClass()));
-                            $qb->join($alias.'.'.$key, $aliasChild);
-                            $this->addWhereForSubForm($subForm, $qb);
+                            $qb->join($alias.'.'.$key, $key);
+                            $this->addWhereForSubForm($subForm, $qb, $key);
                         }
                     }
                 }
