@@ -100,21 +100,21 @@
 {% block date_widget %}
     {% if widget == 'single_text' %}
         {% set attr = attr|merge({'class': (attr.class|default('') ~ ' date')|trim}) %}
-        {{ parent() }}
     {% endif %}
+    {{ parent() }}
 {% endblock date_widget %}
 
 {% block time_widget %}
     {% if widget == 'single_text' %}
         {% set attr = attr|merge({'class': (attr.class|default('') ~ ' time')|trim}) %}
-        {{ parent() }}
     {% endif %}
+    {{ parent() }}
 {% endblock time_widget %}
 
 {% block datetime_widget %}
     {% if widget == 'single_text' %}
         {% set attr = attr|merge({'class': (attr.class|default('') ~ ' datetime')|trim}) %}
-        {{ parent() }}
     {% endif %}
+    {{ parent() }}
 {% endblock datetime_widget %}
 
